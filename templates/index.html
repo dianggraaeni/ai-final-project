@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Similarity Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>Face Similarity Detection</h1>
+        <p>Upload two facial images to check their similarity score.</p>
+    </div>
+
+    <div class="container">
+        <div class="images-container">
+            <div class="image-section">
+                <h3>Face Image 1</h3>
+                <div class="image-preview" id="preview1">
+                    <p>No image selected</p>
+                </div>
+                <div class="buttons">
+                    <input type="file" id="file1" accept="image/*" style="display: none;">
+                    <button class="btn btn-primary" id="load1">Load Image 1</button>
+                </div>
+            </div>
+            
+            <div class="image-section">
+                <h3>Face Image 2</h3>
+                <div class="image-preview" id="preview2">
+                    <p>No image selected</p>
+                </div>
+                <div class="buttons">
+                    <input type="file" id="file2" accept="image/*" style="display: none;">
+                    <button class="btn btn-primary" id="load2">Load Image 2</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing images, please wait...</p>
+        </div>
+
+        <div class="error-message" id="error">
+            Error message will appear here.
+        </div>
+
+        <button class="btn btn-success" id="predict">Predict Similarity</button>
+
+        <div class="result-section">
+            <h3>Similarity Result</h3>
+            <div class="similarity-result" id="result">Not analyzed yet</div>
+            <p id="result-details"></p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

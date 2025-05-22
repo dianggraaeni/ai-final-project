@@ -31,6 +31,29 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.instructions {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #3498db;
+    margin-bottom: 10px;
+}
+
+.instructions h3 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.instructions ul {
+    padding-left: 20px;
+    margin-bottom: 0;
+}
+
+.instructions li {
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+
 .images-container {
     display: flex;
     flex-direction: row;
@@ -64,12 +87,19 @@ body {
     justify-content: center;
     background-color: #f9f9f9;
     overflow: hidden;
+    position: relative;
 }
 
 .image-preview img {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+}
+
+.image-preview p {
+    color: #95a5a6;
+    text-align: center;
+    padding: 20px;
 }
 
 .buttons {
@@ -109,6 +139,11 @@ body {
     background-color: #27ae60;
 }
 
+.btn:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
 .result-section {
     margin-top: 20px;
     border-top: 1px solid #eee;
@@ -127,6 +162,15 @@ body {
     display: none;
     text-align: center;
     margin: 20px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.loading-note {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-top: 10px;
 }
 
 .spinner {
@@ -150,8 +194,25 @@ body {
     margin-top: 10px;
     display: none;
     text-align: center;
-    padding: 10px;
+    padding: 15px;
     border: 1px solid #e74c3c;
     border-radius: 5px;
     background-color: #fadbd8;
+}
+
+.system-status {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+#system-status.online {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+#system-status.offline {
+    color: #e74c3c;
+    font-weight: bold;
 }

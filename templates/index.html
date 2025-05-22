@@ -13,6 +13,16 @@
     </div>
 
     <div class="container">
+        <div class="instructions">
+            <h3>Instructions</h3>
+            <ul>
+                <li>Upload clear photos of faces for best results</li>
+                <li>Ensure face is visible and well-lit</li>
+                <li>Processing may take a few seconds</li>
+                <li>For optimal results, use frontal face images</li>
+            </ul>
+        </div>
+
         <div class="images-container">
             <div class="image-section">
                 <h3>Face Image 1</h3>
@@ -40,6 +50,7 @@
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <p>Processing images, please wait...</p>
+            <p class="loading-note">This may take a few moments the first time as models are loaded.</p>
         </div>
 
         <div class="error-message" id="error">
@@ -52,6 +63,10 @@
             <h3>Similarity Result</h3>
             <div class="similarity-result" id="result">Not analyzed yet</div>
             <p id="result-details"></p>
+        </div>
+        
+        <div class="system-status">
+            <p>System Status: <span id="system-status">Checking...</span></p>
         </div>
     </div>
 

@@ -1,0 +1,32 @@
+{
+  "similarity": 77.15,
+  "verified": true,
+  "distance": 0.2285436903167778,
+  "threshold": 0.4,
+  "method_used": "DeepFace (Facenet)",
+  "model_name": "Facenet",
+  "detector_backend": "opencv",
+  "distance_metric": "cosine",
+  "face1_attributes": {
+    "age": 24,
+    "gender": "Woman",
+    "race": "white",
+    "emotion": "neutral",
+    "gender_confidence": 99.27541613578796,
+    "race_confidence": 98.21959733963013,
+    "emotion_confidence": 92.85407662391663
+  },
+  "face2_attributes": {
+    "age": 31,
+    "gender": "Woman",
+    "race": "white",
+    "emotion": "neutral",
+    "gender_confidence": 99.99387264251709,
+    "race_confidence": 99.45434338398654,
+    "emotion_confidence": 69.6929395198822
+  },
+  "img1_type": "Real Photo",
+  "img2_type": "Real Photo",
+  "analysis_timestamp": "2025-05-22T17:08:39.447830",
+  "result_id": "e2a959e2-c73d-4c7e-b8ff-bea4afb5c60c"
+}

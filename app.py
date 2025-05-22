@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import os
 import base64
 import numpy as np
@@ -10,6 +10,8 @@ from functools import lru_cache
 import logging
 import traceback
 import time
+from datetime import datetime
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, 
@@ -18,11 +20,13 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Create local directory for image processing
+# Create directories
 TEMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp_uploads')
+RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'results')
 os.makedirs(TEMP_DIR, exist_ok=True)
+os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# Cache DeepFace model to avoid reloading
+# Cache DeepFace model
 @lru_cache(maxsize=1)
 def get_deepface():
     try:
@@ -33,19 +37,20 @@ def get_deepface():
         logger.error(f"Error loading DeepFace: {str(e)}")
         return None
 
-# Route for home page
+# Available models and detectors
+AVAILABLE_MODELS = ['VGG-Face', 'Facenet', 'Facenet512', 'OpenFace', 'DeepFace', 'DeepID', 'ArcFace', 'Dlib', 'SFace']
+AVAILABLE_DETECTORS = ['opencv', 'retinaface', 'mtcnn', 'ssd', 'dlib', 'mediapipe']
+DISTANCE_METRICS = ['cosine', 'euclidean', 'euclidean_l2']
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Helper function to preprocess images
 def preprocess_image(img_data, target_filename):
     try:
-        # Clean the base64 data
         if ',' in img_data:
             img_data = img_data.split(',')[1]
         
-        # Decode base64 to numpy array
         img_array = np.frombuffer(base64.b64decode(img_data), dtype=np.uint8)
         img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
         
@@ -53,115 +58,122 @@ def preprocess_image(img_data, target_filename):
             logger.error("Failed to decode image")
             return None
         
-        # Resize to reasonable dimensions if too large
-        max_dimension = 600  # Reduced from 800 for better performance
+        # Resize if too large
+        max_dimension = 800
         height, width = img.shape[:2]
         if height > max_dimension or width > max_dimension:
             scale = max_dimension / max(height, width)
             img = cv2.resize(img, None, fx=scale, fy=scale)
-            logger.debug(f"Image resized to {img.shape[1]}x{img.shape[0]}")
         
-        # Save processed image
         cv2.imwrite(target_filename, img)
-        logger.debug(f"Preprocessed image saved to {target_filename}")
-        
         return target_filename
     except Exception as e:
         logger.error(f"Error in preprocessing image: {str(e)}")
         return None
 
-# Multiple attempt face verification with different configurations
-def verify_faces_multiple_attempts(img1_path, img2_path):
-    """
-    Try multiple configurations to verify faces
-    """
-    DeepFace = get_deepface()
-    if not DeepFace:
-        raise Exception("DeepFace not available")
-    
-    # Configuration attempts in order of preference
-    configs = [
-        # Most permissive - should work with most images
-        {
-            'model_name': 'Facenet',
-            'detector_backend': 'opencv',
-            'enforce_detection': False,
-            'distance_metric': 'cosine'
-        },
-        # Alternative with different model
-        {
-            'model_name': 'VGG-Face',
-            'detector_backend': 'opencv',
-            'enforce_detection': False,
-            'distance_metric': 'cosine'
-        },
-        # Try with RetinaFace detector
-        {
-            'model_name': 'Facenet',
-            'detector_backend': 'retinaface',
-            'enforce_detection': False,
-            'distance_metric': 'cosine'
-        },
-        # Most basic - should work even with poor quality images
-        {
-            'model_name': 'Facenet',
-            'detector_backend': 'opencv',
-            'enforce_detection': False,
-            'distance_metric': 'euclidean'
-        }
-    ]
-    
-    last_error = None
-    
-    for i, config in enumerate(configs):
-        try:
-            logger.info(f"Attempting verification with config {i+1}: {config}")
-            
-            result = DeepFace.verify(
-                img1_path=img1_path,
-                img2_path=img2_path,
-                **config
-            )
-            
-            logger.info(f"Verification successful with config {i+1}")
-            return result, config['model_name']
-            
-        except Exception as e:
-            logger.warning(f"Config {i+1} failed: {str(e)}")
-            last_error = e
-            continue
-    
-    # If all configurations failed, raise the last error
-    raise last_error
-
-# Alternative simple similarity calculation
-def calculate_simple_similarity(img1_path, img2_path):
-    """
-    Simple image similarity based on histogram comparison
-    This is a fallback when face detection fails
-    """
+def analyze_face_attributes(img_path):
+    """Analyze face attributes like age, gender, race, emotion"""
     try:
-        # Read images
+        DeepFace = get_deepface()
+        if not DeepFace:
+            return None
+            
+        # Analyze face attributes
+        analysis = DeepFace.analyze(
+            img_path=img_path,
+            actions=['age', 'gender', 'race', 'emotion'],
+            enforce_detection=False
+        )
+        
+        # Handle both single face and multiple faces
+        if isinstance(analysis, list):
+            analysis = analysis[0]  # Take first face
+        
+        # Extract and clean data
+        result = {
+            'age': int(analysis.get('age', 0)),
+            'gender': str(analysis.get('dominant_gender', 'Unknown')),
+            'race': str(analysis.get('dominant_race', 'Unknown')),
+            'emotion': str(analysis.get('dominant_emotion', 'Unknown')),
+            'gender_confidence': float(analysis.get('gender', {}).get(analysis.get('dominant_gender', 'Woman'), 0)),
+            'race_confidence': float(analysis.get('race', {}).get(analysis.get('dominant_race', 'asian'), 0)),
+            'emotion_confidence': float(analysis.get('emotion', {}).get(analysis.get('dominant_emotion', 'neutral'), 0))
+        }
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error analyzing face attributes: {str(e)}")
+        return None
+
+def detect_image_type(img_path):
+    """Detect if image is anime, AI-generated, or real photo"""
+    try:
+        img = cv2.imread(img_path)
+        
+        # Simple heuristics for image type detection
+        # Convert to HSV for better color analysis
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        
+        # Calculate various metrics
+        saturation_mean = np.mean(hsv[:,:,1])
+        brightness_variance = np.var(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
+        
+        # Edge detection for sharpness analysis
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        
+        # Simple classification based on empirical thresholds
+        if saturation_mean > 150 and laplacian_var > 1000:
+            return "Anime/Cartoon"
+        elif laplacian_var > 2000 and brightness_variance > 3000:
+            return "AI Generated (suspected)"
+        else:
+            return "Real Photo"
+            
+    except Exception as e:
+        logger.error(f"Error detecting image type: {str(e)}")
+        return "Unknown"
+
+def verify_faces_advanced(img1_path, img2_path, model_name='Facenet', detector_backend='opencv', distance_metric='cosine'):
+    """Advanced face verification with custom parameters"""
+    try:
+        DeepFace = get_deepface()
+        if not DeepFace:
+            raise Exception("DeepFace not available")
+        
+        result = DeepFace.verify(
+            img1_path=img1_path,
+            img2_path=img2_path,
+            model_name=model_name,
+            detector_backend=detector_backend,
+            enforce_detection=False,
+            distance_metric=distance_metric
+        )
+        
+        return result, model_name
+        
+    except Exception as e:
+        logger.error(f"Advanced verification failed: {str(e)}")
+        raise e
+
+def calculate_histogram_similarity(img1_path, img2_path):
+    """Fallback histogram-based similarity"""
+    try:
         img1 = cv2.imread(img1_path)
         img2 = cv2.imread(img2_path)
         
-        # Convert to RGB
         img1_rgb = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
         img2_rgb = cv2.cvtColor(img2, cv2.COLOR_BGR2RGB)
         
-        # Resize to same dimensions
         size = (224, 224)
         img1_resized = cv2.resize(img1_rgb, size)
         img2_resized = cv2.resize(img2_rgb, size)
         
-        # Calculate histogram correlation
         hist1 = cv2.calcHist([img1_resized], [0, 1, 2], None, [50, 50, 50], [0, 256, 0, 256, 0, 256])
         hist2 = cv2.calcHist([img2_resized], [0, 1, 2], None, [50, 50, 50], [0, 256, 0, 256, 0, 256])
         
-        # Calculate correlation
         correlation = cv2.compareHist(hist1, hist2, cv2.HISTCMP_CORREL)
-        
-        # Convert to percentage and ensure all values are JSON serializable
         similarity_percentage = float(max(0, correlation * 100))
         
         return {
@@ -173,31 +185,51 @@ def calculate_simple_similarity(img1_path, img2_path):
         }
         
     except Exception as e:
-        logger.error(f"Simple similarity calculation failed: {str(e)}")
+        logger.error(f"Histogram similarity failed: {str(e)}")
         return None
 
-# Main prediction route
+def save_analysis_result(data, result_id):
+    """Save analysis result for sharing"""
+    try:
+        result_file = os.path.join(RESULTS_DIR, f"{result_id}.json")
+        with open(result_file, 'w') as f:
+            json.dump(data, f, indent=2)
+        return result_id
+    except Exception as e:
+        logger.error(f"Error saving result: {str(e)}")
+        return None
+
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        logger.info("Starting prediction request")
+        logger.info("Starting advanced prediction request")
         
-        # Get base64 encoded images from request
         data = request.json
         if not data:
             return jsonify({'error': 'No data provided'}), 400
             
         img1_data = data.get('image1')
         img2_data = data.get('image2')
+        model_name = data.get('model', 'Facenet')
+        detector_backend = data.get('detector', 'opencv')
+        distance_metric = data.get('distance_metric', 'cosine')
         
         if not img1_data or not img2_data:
             return jsonify({'error': 'Please provide both images'}), 400
+        
+        # Validate parameters
+        if model_name not in AVAILABLE_MODELS:
+            model_name = 'Facenet'
+        if detector_backend not in AVAILABLE_DETECTORS:
+            detector_backend = 'opencv'
+        if distance_metric not in DISTANCE_METRICS:
+            distance_metric = 'cosine'
         
         # Create unique filenames
         img1_filename = os.path.join(TEMP_DIR, f"{uuid.uuid4()}.jpg")
         img2_filename = os.path.join(TEMP_DIR, f"{uuid.uuid4()}.jpg")
         
-        # Preprocess and save images
+        # Preprocess images
         img1_path = preprocess_image(img1_data, img1_filename)
         img2_path = preprocess_image(img2_data, img2_filename)
         
@@ -205,50 +237,71 @@ def predict():
             cleanup_files(img1_filename, img2_filename)
             return jsonify({'error': 'Failed to process images'}), 400
         
-        logger.info("Images processed, starting face verification")
+        # Analyze face attributes for both images
+        logger.info("Analyzing face attributes")
+        face1_attributes = analyze_face_attributes(img1_path)
+        face2_attributes = analyze_face_attributes(img2_path)
         
-        # Try face verification with multiple attempts
+        # Detect image types
+        img1_type = detect_image_type(img1_path)
+        img2_type = detect_image_type(img2_path)
+        
+        # Face similarity analysis
+        logger.info("Starting face similarity analysis")
         try:
-            result, model_used = verify_faces_multiple_attempts(img1_path, img2_path)
+            result, model_used = verify_faces_advanced(
+                img1_path, img2_path, model_name, detector_backend, distance_metric
+            )
             
-            logger.info(f"Face verification successful using {model_used}")
-            
-            # Extract results and convert numpy types to Python native types
             distance = float(result.get('distance', 0))
             threshold = float(result.get('threshold', 0.4))
             verified = bool(result.get('verified', False))
             
             # Calculate similarity percentage
-            if 'cosine' in str(result):
+            if distance_metric == 'cosine':
                 similarity_percentage = round(max(0, min(100, (1 - min(distance, 1)) * 100)), 2)
             else:
-                # For euclidean distance, use different calculation
                 similarity_percentage = round(max(0, min(100, (1 - min(distance/4, 1)) * 100)), 2)
             
-            response = {
-                'similarity': float(similarity_percentage),
-                'verified': bool(verified),
-                'distance': float(distance),
-                'threshold': float(threshold),
-                'model_used': str(model_used),
-                'method': 'deepface'
-            }
+            method_used = f"DeepFace ({model_used})"
             
         except Exception as face_error:
-            logger.warning(f"All DeepFace attempts failed: {str(face_error)}")
+            logger.warning(f"DeepFace failed, using histogram: {str(face_error)}")
+            result = calculate_histogram_similarity(img1_path, img2_path)
             
-            # Fallback to simple similarity
-            logger.info("Falling back to histogram-based similarity")
-            result = calculate_simple_similarity(img1_path, img2_path)
-            
-            if result:
-                response = result
-                logger.info("Histogram similarity calculation successful")
-            else:
+            if not result:
                 cleanup_files(img1_filename, img2_filename)
-                return jsonify({
-                    'error': 'Unable to analyze images. Please try with different images or ensure faces are clearly visible.'
-                }), 500
+                return jsonify({'error': 'Unable to analyze images'}), 500
+            
+            similarity_percentage = result['similarity']
+            distance = result['distance']
+            threshold = result['threshold']
+            verified = result['verified']
+            method_used = "Histogram Comparison"
+        
+        # Generate result ID for sharing
+        result_id = str(uuid.uuid4())
+        
+        # Prepare comprehensive response
+        response = {
+            'similarity': float(similarity_percentage),
+            'verified': bool(verified),
+            'distance': float(distance),
+            'threshold': float(threshold),
+            'method_used': str(method_used),
+            'model_name': str(model_name),
+            'detector_backend': str(detector_backend),
+            'distance_metric': str(distance_metric),
+            'face1_attributes': face1_attributes,
+            'face2_attributes': face2_attributes,
+            'img1_type': str(img1_type),
+            'img2_type': str(img2_type),
+            'analysis_timestamp': datetime.now().isoformat(),
+            'result_id': result_id
+        }
+        
+        # Save result for sharing
+        save_analysis_result(response, result_id)
         
         # Clean up files
         cleanup_files(img1_filename, img2_filename)
@@ -256,45 +309,64 @@ def predict():
         return jsonify(response), 200
         
     except Exception as e:
-        logger.error(f"Unexpected error in predict route: {str(e)}")
+        logger.error(f"Unexpected error: {str(e)}")
         traceback.print_exc()
-        return jsonify({'error': 'An unexpected error occurred. Please try again.'}), 500
+        return jsonify({'error': 'An unexpected error occurred'}), 500
 
-def cleanup_files(file1, file2):
-    """Remove temporary files"""
+@app.route('/get_models')
+def get_models():
+    """Get available models and detectors"""
+    return jsonify({
+        'models': AVAILABLE_MODELS,
+        'detectors': AVAILABLE_DETECTORS,
+        'distance_metrics': DISTANCE_METRICS
+    })
+
+@app.route('/share/<result_id>')
+def share_result(result_id):
+    """Share analysis result"""
     try:
-        if os.path.exists(file1):
-            os.remove(file1)
-        if os.path.exists(file2):
-            os.remove(file2)
+        result_file = os.path.join(RESULTS_DIR, f"{result_id}.json")
+        if os.path.exists(result_file):
+            with open(result_file, 'r') as f:
+                data = json.load(f)
+            return render_template('share.html', result=data)
+        else:
+            return render_template('share_not_found.html'), 404
     except Exception as e:
-        logger.error(f"Error cleaning up files: {str(e)}")
+        logger.error(f"Error loading shared result: {str(e)}")
+        return render_template('share_error.html'), 500
 
-# Test route
-@app.route('/test_deepface', methods=['GET'])
+@app.route('/test_deepface')
 def test_deepface():
     try:
         DeepFace = get_deepface()
         if DeepFace is None:
-            return jsonify({'status': 'error', 'message': 'DeepFace failed to load'}), 500
+            return jsonify({'status': 'error', 'message': 'DeepFace not available'}), 500
         
         return jsonify({
-            'status': 'success', 
-            'message': 'DeepFace is loaded and ready'
+            'status': 'success',
+            'message': 'All systems operational',
+            'available_models': AVAILABLE_MODELS,
+            'available_detectors': AVAILABLE_DETECTORS
         })
     except Exception as e:
-        logger.error(f"DeepFace test failed: {str(e)}")
-        return jsonify({
-            'status': 'error', 
-            'message': f'DeepFace test failed: {str(e)}'
-        }), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+def cleanup_files(file1, file2):
+    """Remove temporary files"""
+    try:
+        for file_path in [file1, file2]:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+    except Exception as e:
+        logger.error(f"Cleanup error: {str(e)}")
 
 if __name__ == '__main__':
-    # Test DeepFace loading at startup
     deepface = get_deepface()
     if deepface:
-        logger.info("DeepFace loaded successfully")
+        logger.info("Advanced Face Analysis System Ready")
     else:
-        logger.error("Failed to load DeepFace")
+        logger.error("DeepFace initialization failed")
     
     app.run(debug=True)

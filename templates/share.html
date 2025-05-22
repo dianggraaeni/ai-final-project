@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Face Analysis Results - Shared</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Open Graph Meta Tags for Social Media -->
+    <meta property="og:title" content="AI Face Analysis Results">
+    <meta property="og:description" content="Similarity Score: 85.7% - Advanced AI-powered facial recognition analysis">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="#">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AI Face Analysis Results">
+    <meta name="twitter:description" content="Similarity Score: 85.7% - Check out these AI face analysis results!">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: #667eea;
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .header-subtitle p {
+            color: #7f8c8d;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem 0;
+            min-height: calc(100vh - 200px);
+        }
+
+        /* Result Cards */
+        .result-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .result-header i {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+
+        .result-header h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        /* Similarity Display */
+        .similarity-display {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .similarity-percentage {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .similarity-status {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #34495e;
+        }
+
+        .similarity-bar {
+            width: 100%;
+            height: 12px;
+            background: #ecf0f1;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.8s ease-in-out;
+        }
+
+        /* Analysis Details */
+        .analysis-details {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            margin-top: 1.5rem;
+        }
+
+        .analysis-details strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        /* Attributes Grid */
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .attribute-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .attribute-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .attribute-card h4 i {
+            color: #667eea;
+        }
+
+        .attribute-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .attribute-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .attribute-item:last-child {
+            border-bottom: none;
+        }
+
+        .attr-label {
+            font-weight: 500;
+            color: #7f8c8d;
+        }
+
+        .attr-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Share Section */
+        .share-section {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .share-section h3 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .share-section h3 i {
+            color: #667eea;
+        }
+
+        .share-section p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .analyze-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer p {
+            color: #7f8c8d;
+            margin: 0.5rem 0;
+        }
+
+        .footer strong {
+            color: #2c3e50;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+
+            .similarity-percentage {
+                font-size: 3rem;
+            }
+
+            .result-card,
+            .attribute-card,
+            .share-section {
+                padding: 1.5rem;
+            }
+
+            .attributes-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .similarity-percentage {
+                font-size: 2.5rem;
+            }
+
+            .similarity-status {
+                font-size: 1rem;
+            }
+
+            .result-card,
+            .attribute-card,
+            .share-section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <h1>AI Face Analysis Pro</h1>
+                </div>
+                <div class="header-subtitle">
+                    <p>Shared Analysis Results</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            
+            <!-- Analysis Results -->
+            <div class="result-card similarity-card">
+                <div class="result-header">
+                    <i class="fas fa-share-alt"></i>
+                    <h3>Shared Face Analysis Results</h3>
+                </div>
+                
+                <div class="similarity-display">
+                    <div class="similarity-percentage" style="color: #27ae60">
+                        85.7%
+                    </div>
+                    <div class="similarity-status">
+                        Very High Similarity - Same Person
+                    </div>
+                    <div class="similarity-bar">
+                        <div class="bar-fill" style="width: 85.7%; background: linear-gradient(135deg, #27ae60 0%, #27ae60dd 100%)"></div>
+                    </div>
+                </div>
+
+                <div class="analysis-details">
+                    <strong>Analysis Method:</strong> DeepFace Advanced<br>
+                    <strong>Model:</strong> ArcFace<br>
+                    <strong>Detector:</strong> RetinaFace<br>
+                    <strong>Distance Metric:</strong> Cosine<br>
+                    <strong>Analysis Date:</strong> 2025-05-22<br>
+                    <strong>Distance Score:</strong> 0.1432
+                </div>
+            </div>
+
+            <!-- Face Attributes -->
+            <div class="attributes-grid">
+                <div class="attribute-card">
+                    <h4><i class="fas fa-user-circle"></i> Face 1 Analysis</h4>
+                    <div class="attribute-list">
+                        <div class="attribute-item">
+                            <span class="attr-label">Age:</span>
+                            <span class="attr-value">28 years</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-label">Gender:</span>
+                            <span class="attr-value">Male (89.2%)</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-label">Ethnicity:</span>
+                            <span class="attr-value">Asian (76.4%)</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-label">Emotion:</span>
+                            <span class="attr-value">Happy (92.1%)</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-label">Image Type:</span>
+                            <span class="attr-value">Uploaded Photo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="attribute-card">
+                    <h4><i class="fas fa-user-circle"></i> Face 2 Analysis</h4>
+                    <div class="attribute-list">
+                        <div class="attribute-item">
+                            <span class="attr-label">Age:</span>
+                            <span class="attr-value">29 years</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-label">Gender:</span>
+                            <span class="attr-value">Male (91.8%)</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-label">Ethnicity:</span>
+                            <span class="attr-value">Asian (78.9%)</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-label">Emotion:</span>
+                            <span class="attr-value">Neutral (84.3%)</span>
+                        </div>
+                        <div class="attribute-item">
+                            <span class="attr-label">Image Type:</span>
+                            <span class="attr-value">Uploaded Photo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="share-section">
+                <h3><i class="fas fa-rocket"></i> Try Your Own Analysis</h3>
+                <p>Want to analyze your own images? Try our AI Face Analysis Pro tool!</p>
+                <a href="#" class="analyze-btn">
+                    <i class="fas fa-search"></i>
+                    <span>Start Analysis</span>
+                </a>
+            </div>
+
+            <!-- Technical Details -->
+            <div class="result-card">
+                <div class="result-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>Technical Information</h3>
+                </div>
+                <div class="analysis-details">
+                    <strong>Verification Status:</strong> Verified<br>
+                    <strong>Threshold Used:</strong> 0.4000<br>
+                    <strong>Analysis ID:</strong> FA-2025-052201<br>
+                    <strong>Timestamp:</strong> 2025-05-22 14:30:15 UTC
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 AI Face Analysis Pro. Powered by DeepFace & TensorFlow.</p>
+            <p>Share this result: <strong>#</strong></p>
+        </div>
+    </footer>
+</body>
+</html>

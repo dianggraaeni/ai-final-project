@@ -3,72 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Similarity Detection</title>
+    <title>AI Face Analysis Pro</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="header">
-        <h1>Face Similarity Detection</h1>
-        <p>Upload two facial images to check their similarity score.</p>
-    </div>
-
-    <div class="container">
-        <div class="instructions">
-            <h3>Instructions</h3>
-            <ul>
-                <li>Upload clear photos of faces for best results</li>
-                <li>Ensure face is visible and well-lit</li>
-                <li>Processing may take a few seconds</li>
-                <li>For optimal results, use frontal face images</li>
-            </ul>
-        </div>
-
-        <div class="images-container">
-            <div class="image-section">
-                <h3>Face Image 1</h3>
-                <div class="image-preview" id="preview1">
-                    <p>No image selected</p>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <h1>AI Face Analysis Pro</h1>
                 </div>
-                <div class="buttons">
-                    <input type="file" id="file1" accept="image/*" style="display: none;">
-                    <button class="btn btn-primary" id="load1">Load Image 1</button>
+                <div class="header-subtitle">
+                    <p>Advanced facial recognition and analysis powered by deep learning</p>
                 </div>
             </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
             
-            <div class="image-section">
-                <h3>Face Image 2</h3>
-                <div class="image-preview" id="preview2">
-                    <p>No image selected</p>
+            <!-- Configuration Panel -->
+            <div class="config-panel">
+                <h3><i class="fas fa-cog"></i> Analysis Configuration</h3>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="model-select">AI Model:</label>
+                        <select id="model-select" class="config-select">
+                            <option value="Facenet">Facenet (Recommended)</option>
+                            <option value="VGG-Face">VGG-Face</option>
+                            <option value="Facenet512">Facenet512</option>
+                            <option value="OpenFace">OpenFace</option>
+                            <option value="DeepFace">DeepFace</option>
+                            <option value="ArcFace">ArcFace</option>
+                            <option value="Dlib">Dlib</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label for="detector-select">Face Detector:</label>
+                        <select id="detector-select" class="config-select">
+                            <option value="opencv">OpenCV (Fast)</option>
+                            <option value="retinaface">RetinaFace (Accurate)</option>
+                            <option value="mtcnn">MTCNN</option>
+                            <option value="ssd">SSD</option>
+                            <option value="dlib">Dlib</option>
+                            <option value="mediapipe">MediaPipe</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label for="distance-select">Distance Metric:</label>
+                        <select id="distance-select" class="config-select">
+                            <option value="cosine">Cosine (Recommended)</option>
+                            <option value="euclidean">Euclidean</option>
+                            <option value="euclidean_l2">Euclidean L2</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="buttons">
-                    <input type="file" id="file2" accept="image/*" style="display: none;">
-                    <button class="btn btn-primary" id="load2">Load Image 2</button>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="upload-section">
+                <div class="upload-grid">
+                    <div class="upload-card">
+                        <div class="upload-header">
+                            <i class="fas fa-user"></i>
+                            <h3>Face Image 1</h3>
+                        </div>
+                        <div class="image-preview" id="preview1">
+                            <div class="preview-placeholder">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload first image</p>
+                                <span class="file-types">JPG, PNG, WEBP</span>
+                            </div>
+                        </div>
+                        <input type="file" id="file1" accept="image/*" style="display: none;">
+                        <button class="upload-btn" id="load1">
+                            <i class="fas fa-upload"></i> Upload Image 1
+                        </button>
+                        <div class="image-info" id="info1"></div>
+                    </div>
+                    
+                    <div class="upload-card">
+                        <div class="upload-header">
+                            <i class="fas fa-user"></i>
+                            <h3>Face Image 2</h3>
+                        </div>
+                        <div class="image-preview" id="preview2">
+                            <div class="preview-placeholder">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload second image</p>
+                                <span class="file-types">JPG, PNG, WEBP</span>
+                            </div>
+                        </div>
+                        <input type="file" id="file2" accept="image/*" style="display: none;">
+                        <button class="upload-btn" id="load2">
+                            <i class="fas fa-upload"></i> Upload Image 2
+                        </button>
+                        <div class="image-info" id="info2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Controls -->
+            <div class="controls-section">
+                <button class="analyze-btn" id="predict">
+                    <i class="fas fa-search"></i>
+                    <span>Analyze Faces</span>
+                </button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div class="loading-section" id="loading">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">
+                    <h3>Analyzing faces...</h3>
+                    <p>This may take a few moments</p>
+                    <div class="loading-steps">
+                        <div class="step active" id="step1">Processing images</div>
+                        <div class="step" id="step2">Detecting faces</div>
+                        <div class="step" id="step3">Analyzing attributes</div>
+                        <div class="step" id="step4">Calculating similarity</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Messages -->
+            <div class="error-message" id="error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="error-text"></span>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="results-section">
+                <!-- Similarity Result -->
+                <div class="result-card similarity-card">
+                    <div class="result-header">
+                        <i class="fas fa-percentage"></i>
+                        <h3>Similarity Score</h3>
+                    </div>
+                    <div class="similarity-display">
+                        <div class="similarity-percentage" id="similarity-percentage">--</div>
+                        <div class="similarity-status" id="similarity-status">Not analyzed</div>
+                        <div class="similarity-bar">
+                            <div class="bar-fill" id="similarity-bar"></div>
+                        </div>
+                    </div>
+                    <div class="analysis-details" id="analysis-details"></div>
+                </div>
+
+                <!-- Face Attributes -->
+                <div class="attributes-grid">
+                    <div class="attribute-card">
+                        <h4><i class="fas fa-user-circle"></i> Face 1 Analysis</h4>
+                        <div class="attribute-list" id="face1-attributes">
+                            <div class="attribute-item">
+                                <span class="attr-label">Age:</span>
+                                <span class="attr-value" id="face1-age">--</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-label">Gender:</span>
+                                <span class="attr-value" id="face1-gender">--</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-label">Ethnicity:</span>
+                                <span class="attr-value" id="face1-race">--</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-label">Emotion:</span>
+                                <span class="attr-value" id="face1-emotion">--</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-label">Image Type:</span>
+                                <span class="attr-value" id="face1-type">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="attribute-card">
+                        <h4><i class="fas fa-user-circle"></i> Face 2 Analysis</h4>
+                        <div class="attribute-list" id="face2-attributes">
+                            <div class="attribute-item">
+                                <span class="attr-label">Age:</span>
+                                <span class="attr-value" id="face2-age">--</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-label">Gender:</span>
+                                <span class="attr-value" id="face2-gender">--</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-label">Ethnicity:</span>
+                                <span class="attr-value" id="face2-race">--</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-label">Emotion:</span>
+                                <span class="attr-value" id="face2-emotion">--</span>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-label">Image Type:</span>
+                                <span class="attr-value" id="face2-type">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Share Section -->
+                <div class="share-section">
+                    <h3><i class="fas fa-share-alt"></i> Share Results</h3>
+                    <div class="share-buttons">
+                        <button class="share-btn twitter" id="share-twitter">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </button>
+                        <button class="share-btn facebook" id="share-facebook">
+                            <i class="fab fa-facebook"></i> Facebook
+                        </button>
+                        <button class="share-btn linkedin" id="share-linkedin">
+                            <i class="fab fa-linkedin"></i> LinkedIn
+                        </button>
+                        <button class="share-btn copy" id="copy-link">
+                            <i class="fas fa-link"></i> Copy Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="status-bar">
+                <div class="status-item">
+                    <i class="fas fa-circle" id="status-indicator"></i>
+                    <span id="system-status">Checking system...</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-server"></i>
+                    <span id="model-status">Loading models...</span>
                 </div>
             </div>
         </div>
+    </main>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Processing images, please wait...</p>
-            <p class="loading-note">This may take a few moments the first time as models are loaded.</p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 AI Face Analysis Pro. Powered by DeepFace & TensorFlow.</p>
         </div>
-
-        <div class="error-message" id="error">
-            Error message will appear here.
-        </div>
-
-        <button class="btn btn-success" id="predict">Predict Similarity</button>
-
-        <div class="result-section">
-            <h3>Similarity Result</h3>
-            <div class="similarity-result" id="result">Not analyzed yet</div>
-            <p id="result-details"></p>
-        </div>
-        
-        <div class="system-status">
-            <p>System Status: <span id="system-status">Checking...</span></p>
-        </div>
-    </div>
+    </footer>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>

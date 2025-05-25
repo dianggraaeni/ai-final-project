@@ -1,0 +1,32 @@
+{
+  "similarity": 59.74,
+  "verified": false,
+  "distance": 0.40257076444600637,
+  "threshold": 0.4,
+  "method_used": "DeepFace (Facenet)",
+  "model_name": "Facenet",
+  "detector_backend": "opencv",
+  "distance_metric": "cosine",
+  "face1_attributes": {
+    "age": 29,
+    "gender": "Man",
+    "race": "white",
+    "emotion": "neutral",
+    "gender_confidence": 99.98362064361572,
+    "race_confidence": 73.30108721858782,
+    "emotion_confidence": 90.71090817451477
+  },
+  "face2_attributes": {
+    "age": 23,
+    "gender": "Man",
+    "race": "white",
+    "emotion": "neutral",
+    "gender_confidence": 99.99874830245972,
+    "race_confidence": 71.17834434767433,
+    "emotion_confidence": 99.56900477409363
+  },
+  "img1_type": "Real Photo",
+  "img2_type": "Real Photo",
+  "analysis_timestamp": "2025-05-25T17:53:23.875696",
+  "result_id": "86580946-acc9-4c1a-8d16-44ee734ed525"
+}

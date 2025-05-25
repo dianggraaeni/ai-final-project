@@ -1,0 +1,16 @@
+{
+  "similarity": 81.08,
+  "verified": true,
+  "distance": 0.1891540036534206,
+  "threshold": 0.4,
+  "method_used": "DeepFace (Facenet)",
+  "model_name": "Facenet",
+  "detector_backend": "opencv",
+  "distance_metric": "cosine",
+  "face1_attributes": null,
+  "face2_attributes": null,
+  "img1_type": "Real Photo",
+  "img2_type": "Real Photo",
+  "analysis_timestamp": "2025-05-25T18:34:27.034543",
+  "result_id": "57b3c849-4107-4253-a934-016546ca1f36"
+}

@@ -87,11 +87,54 @@ function initializeEventListeners() {
     // Predict button
     elements.predictButton.addEventListener('click', predictSimilarity);
     
+    // Configuration change listeners - TAMBAHAN PENTING
+    elements.modelSelect.addEventListener('change', onConfigurationChange);
+    elements.detectorSelect.addEventListener('change', onConfigurationChange);
+    elements.distanceSelect.addEventListener('change', onConfigurationChange);
+    
     // Share buttons
     elements.shareTwitter.addEventListener('click', shareToTwitter);
     elements.shareFacebook.addEventListener('click', shareToFacebook);
     elements.shareLinkedin.addEventListener('click', shareToLinkedin);
     elements.copyLink.addEventListener('click', copyShareLink);
+}
+
+// FUNGSI BARU: Handle perubahan konfigurasi
+function onConfigurationChange() {
+    console.log('Configuration changed:', {
+        model: elements.modelSelect.value,
+        detector: elements.detectorSelect.value,
+        distance: elements.distanceSelect.value
+    });
+    
+    // Jika sudah ada hasil sebelumnya dan kedua gambar masih ada, re-analyze otomatis
+    if (image1 && image2 && elements.resultsSection.style.display === 'block') {
+        // Tampilkan indikator bahwa konfigurasi berubah
+        showConfigurationChanged();
+        
+        // Auto re-analyze setelah delay singkat (opsional)
+        // setTimeout(() => {
+        //     if (image1 && image2) {
+        //         predictSimilarity();
+        //     }
+        // }, 1000);
+    }
+    
+    // Save preferences
+    saveUserPreferences();
+}
+
+// FUNGSI BARU: Tampilkan indikator konfigurasi berubah
+function showConfigurationChanged() {
+    if (elements.analysisDetails) {
+        elements.analysisDetails.style.opacity = '0.5';
+        elements.analysisDetails.innerHTML = `
+            <div style="color: #f39c12; font-weight: bold; margin-bottom: 10px;">
+                <i class="fas fa-exclamation-triangle"></i> Configuration Changed
+            </div>
+            <p style="color: #666;">Click "Analyze Faces" to update results with new settings.</p>
+        `;
+    }
 }
 
 function handleImageUpload(event, imageNumber) {
@@ -201,13 +244,24 @@ function predictSimilarity() {
     // Show loading with steps
     showLoadingSteps();
     
+    // Get current configuration values - PERBAIKAN PENTING
+    const currentModel = elements.modelSelect.value;
+    const currentDetector = elements.detectorSelect.value;
+    const currentDistance = elements.distanceSelect.value;
+    
+    console.log('Sending request with configuration:', {
+        model: currentModel,
+        detector: currentDetector,
+        distance_metric: currentDistance
+    });
+    
     // Prepare request data
     const requestData = {
         image1: image1,
         image2: image2,
-        model: elements.modelSelect.value,
-        detector: elements.detectorSelect.value,
-        distance_metric: elements.distanceSelect.value
+        model: currentModel,
+        detector: currentDetector,
+        distance_metric: currentDistance
     };
     
     // Send request
@@ -227,6 +281,7 @@ function predictSimilarity() {
         return response.json();
     })
     .then(data => {
+        console.log('Received response:', data);
         displayResults(data);
         currentResultId = data.result_id;
     })
@@ -296,23 +351,33 @@ function displayResults(data) {
     elements.similarityPercentage.style.color = statusColor;
     elements.similarityBar.style.background = `linear-gradient(135deg, ${statusColor} 0%, ${statusColor}dd 100%)`;
     
-    // Display analysis details
+    // Display analysis details - PERBAIKAN PENTING: Pastikan data dari response digunakan
+    const analysisMethod = data.method_used || 'DeepFace (Facenet)';
+    const modelName = data.model_name || data.model || elements.modelSelect.value;
+    const detectorBackend = data.detector_backend || data.detector || elements.detectorSelect.value;
+    const distanceMetric = data.distance_metric || elements.distanceSelect.value;
+    const distanceScore = data.distance || 0;
+    const threshold = data.threshold || 0.4;
+    
     elements.analysisDetails.innerHTML = `
-        <strong>Analysis Method:</strong> ${data.method_used}<br>
-        <strong>Model:</strong> ${data.model_name}<br>
-        <strong>Detector:</strong> ${data.detector_backend}<br>
-        <strong>Distance Metric:</strong> ${data.distance_metric}<br>
-        <strong>Distance Score:</strong> ${data.distance.toFixed(4)}<br>
-        <strong>Threshold:</strong> ${data.threshold.toFixed(4)}
+        <strong>Analysis Method:</strong> ${analysisMethod}<br>
+        <strong>Model:</strong> ${modelName}<br>
+        <strong>Detector:</strong> ${detectorBackend}<br>
+        <strong>Distance Metric:</strong> ${distanceMetric}<br>
+        <strong>Distance Score:</strong> ${distanceScore.toFixed(4)}<br>
+        <strong>Threshold:</strong> ${threshold.toFixed(4)}
     `;
+    
+    // Reset opacity jika sebelumnya dimmed
+    elements.analysisDetails.style.opacity = '1';
     
     // Display face attributes
     displayFaceAttributes(data.face1_attributes, 1);
     displayFaceAttributes(data.face2_attributes, 2);
     
     // Display image types
-    elements.face1Type.textContent = data.img1_type;
-    elements.face2Type.textContent = data.img2_type;
+    elements.face1Type.textContent = data.img1_type || 'Unknown';
+    elements.face2Type.textContent = data.img2_type || 'Unknown';
     
     // Scroll to results
     elements.resultsSection.scrollIntoView({ behavior: 'smooth' });
@@ -438,35 +503,42 @@ function loadAvailableModels() {
     fetch('/get_models')
         .then(response => response.json())
         .then(data => {
-            // Update model options
+            // Model Select
             elements.modelSelect.innerHTML = '';
             data.models.forEach(model => {
                 const option = document.createElement('option');
-                option.value = model;
-                option.textContent = model;
-                if (model === 'Facenet') option.selected = true;
+                option.value = model.name;
+                option.textContent = model.name + ' – ' + model.accuracy + '%';
+                if (model.recommended) option.textContent = "⭐ " + option.textContent + " (Recommended)";
+                if (model.recommended) option.selected = true;
                 elements.modelSelect.appendChild(option);
             });
-            
-            // Update detector options
+
+            // Detector Select
             elements.detectorSelect.innerHTML = '';
             data.detectors.forEach(detector => {
                 const option = document.createElement('option');
-                option.value = detector;
-                option.textContent = detector.charAt(0).toUpperCase() + detector.slice(1);
-                if (detector === 'opencv') option.selected = true;
+                option.value = detector.name;
+                option.textContent = detector.name.charAt(0).toUpperCase() + detector.name.slice(1);
+                if (detector.description) option.textContent += ' (' + detector.description + ')';
+                if (detector.recommended) option.textContent = "⭐ " + option.textContent;
+                if (detector.recommended) option.selected = true;
                 elements.detectorSelect.appendChild(option);
             });
-            
-            // Update distance metric options
+
+            // Distance Metric Select
             elements.distanceSelect.innerHTML = '';
             data.distance_metrics.forEach(metric => {
                 const option = document.createElement('option');
-                option.value = metric;
-                option.textContent = metric.charAt(0).toUpperCase() + metric.slice(1);
-                if (metric === 'cosine') option.selected = true;
+                option.value = metric.name;
+                option.textContent = metric.name.charAt(0).toUpperCase() + metric.name.slice(1);
+                if (metric.recommended) option.textContent = "⭐ " + option.textContent + " (Recommended)";
+                if (metric.recommended) option.selected = true;
                 elements.distanceSelect.appendChild(option);
             });
+            
+            // Load saved preferences after models are loaded
+            setTimeout(loadUserPreferences, 100);
         })
         .catch(error => {
             console.error('Failed to load available models:', error);
@@ -640,22 +712,20 @@ function loadUserPreferences() {
     if (saved) {
         try {
             const preferences = JSON.parse(saved);
-            if (preferences.model) elements.modelSelect.value = preferences.model;
-            if (preferences.detector) elements.detectorSelect.value = preferences.detector;
-            if (preferences.distanceMetric) elements.distanceSelect.value = preferences.distanceMetric;
+            if (preferences.model && elements.modelSelect) {
+                elements.modelSelect.value = preferences.model;
+            }
+            if (preferences.detector && elements.detectorSelect) {
+                elements.detectorSelect.value = preferences.detector;
+            }
+            if (preferences.distanceMetric && elements.distanceSelect) {
+                elements.distanceSelect.value = preferences.distanceMetric;
+            }
         } catch (e) {
             console.error('Error loading preferences:', e);
         }
     }
 }
-
-// Save preferences when changed
-elements.modelSelect.addEventListener('change', saveUserPreferences);
-elements.detectorSelect.addEventListener('change', saveUserPreferences);
-elements.distanceSelect.addEventListener('change', saveUserPreferences);
-
-// Load preferences on page load
-setTimeout(loadUserPreferences, 1000); // Wait for models to load
 
 // Advanced error handling
 window.addEventListener('error', function(e) {

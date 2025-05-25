@@ -1,0 +1,32 @@
+{
+  "similarity": 0.0,
+  "verified": false,
+  "distance": 1.0221254366172883,
+  "threshold": 0.3,
+  "method_used": "DeepFace (Facenet512)",
+  "model_name": "Facenet512",
+  "detector_backend": "retinaface",
+  "distance_metric": "cosine",
+  "face1_attributes": {
+    "age": 28,
+    "gender": "Woman",
+    "race": "white",
+    "emotion": "angry",
+    "gender_confidence": 72.92149066925049,
+    "race_confidence": 97.25995627164319,
+    "emotion_confidence": 88.42986226081848
+  },
+  "face2_attributes": {
+    "age": 23,
+    "gender": "Man",
+    "race": "middle eastern",
+    "emotion": "neutral",
+    "gender_confidence": 99.99974966049194,
+    "race_confidence": 48.06479215621948,
+    "emotion_confidence": 99.941104646987
+  },
+  "img1_type": "Real Photo",
+  "img2_type": "Real Photo",
+  "analysis_timestamp": "2025-05-24T11:39:44.291952",
+  "result_id": "a0134adc-262c-4c64-b3fe-a88d97a4adf9"
+}

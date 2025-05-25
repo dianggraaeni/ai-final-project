@@ -1,0 +1,16 @@
+{
+  "similarity": 0.0,
+  "verified": true,
+  "distance": 2.8772200377015933,
+  "threshold": 4.15,
+  "method_used": "DeepFace",
+  "model_name": "ArcFace",
+  "detector_backend": "opencv",
+  "distance_metric": "euclidean",
+  "face1_attributes": null,
+  "face2_attributes": null,
+  "img1_type": "Real Photo",
+  "img2_type": "Real Photo",
+  "analysis_timestamp": "2025-05-25T18:48:50.507970",
+  "result_id": "93ff5e20-5486-4cbd-9370-72f857d33098"
+}

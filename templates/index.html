@@ -32,35 +32,37 @@
             <div class="config-panel">
                 <h3><i class="fas fa-cog"></i> Analysis Configuration</h3>
                 <div class="config-grid">
+                    <!-- AI Model -->
                     <div class="config-item">
                         <label for="model-select">AI Model:</label>
                         <select id="model-select" class="config-select">
-                            <option value="Facenet">Facenet (Recommended)</option>
-                            <option value="VGG-Face">VGG-Face</option>
-                            <option value="Facenet512">Facenet512</option>
-                            <option value="OpenFace">OpenFace</option>
-                            <option value="DeepFace">DeepFace</option>
-                            <option value="ArcFace">ArcFace</option>
-                            <option value="Dlib">Dlib</option>
+                            <option value="Facenet512">⭐ Facenet512 – 98.4% (Recommended)</option>
+                            <option value="Facenet">Facenet – 97.4%</option>
+                            <option value="Dlib">Dlib – 96.8%</option>
+                            <option value="VGG-Face">VGG-Face – 96.7%</option>
+                            <option value="ArcFace">ArcFace – 96.7%</option>
                         </select>
                     </div>
+
+                    <!-- Face Detector -->
                     <div class="config-item">
                         <label for="detector-select">Face Detector:</label>
                         <select id="detector-select" class="config-select">
-                            <option value="opencv">OpenCV (Fast)</option>
-                            <option value="retinaface">RetinaFace (Accurate)</option>
-                            <option value="mtcnn">MTCNN</option>
-                            <option value="ssd">SSD</option>
-                            <option value="dlib">Dlib</option>
+                            <option value="retinaface">⭐ RetinaFace (Most Accurate)</option>
                             <option value="mediapipe">MediaPipe</option>
+                            <option value="mtcnn">MTCNN</option>
+                            <option value="dlib">Dlib</option>
+                            <option value="ssd">SSD</option>
                         </select>
                     </div>
+
+                    <!-- Distance Metric -->
                     <div class="config-item">
                         <label for="distance-select">Distance Metric:</label>
                         <select id="distance-select" class="config-select">
-                            <option value="cosine">Cosine (Recommended)</option>
-                            <option value="euclidean">Euclidean</option>
+                            <option value="cosine">⭐ Cosine (Recommended)</option>
                             <option value="euclidean_l2">Euclidean L2</option>
+                            <option value="euclidean">Euclidean</option>
                         </select>
                     </div>
                 </div>
